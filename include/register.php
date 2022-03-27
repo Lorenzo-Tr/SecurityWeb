@@ -23,22 +23,24 @@ $user_login['username'] = hash('sha512', $user_login['username']);
 $db->change_encrypt_key();
 $user_details = $db->encrypt_data($user_details);
 
-$db->run('INSERT INTO `user` (username, password) VALUES (?, ?);', [
+$q1 = $db->run('INSERT INTO `user` (username, password) VALUES (?, ?);', [
 	$user_login['username'],
 	$user_login['password']
 ]);
 
 $user_id = $db->pdo->lastInsertId();
 
-$db->run('INSERT INTO `user_details` (user_id, lastname, firstname,email) VALUES (?,?,?,?);', [
+$q2 = $db->run('INSERT INTO `user_details` (user_id, lastname, firstname,email) VALUES (?,?,?,?);', [
 	$user_id,
 	$user_details['lastname'],
 	$user_details['firstname'],
 	$user_details['mail']
 ]);
 
-$db_encrypt->run('INSERT INTO `encrypt` (`user_id`, `key`, `iv`) VALUES (?,?,?)', [
+$q3 = $db_encrypt->run('INSERT INTO `encrypt` (`user_id`, `key`, `iv`) VALUES (?,?,?);', [
 	$user_id,
 	bin2hex($db->key),
 	bin2hex($db->iv)
 ]);
+
+
