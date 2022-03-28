@@ -4,7 +4,6 @@ require_once "const.php";
 
 $db = new Database(DB_NAME, USER, PASSWORD);
 $db_encrypt = new Database(DB_NAME_ENCRYPT, USER_ENCRYPT, PASSWORD_ENCRYPT);
-
 $user_details = [
 	'mail' => $_POST['register_mail'],
 	'firstname' => $_POST['register_firstname'],
@@ -43,4 +42,11 @@ $q3 = $db_encrypt->run('INSERT INTO `encrypt` (`user_id`, `key`, `iv`) VALUES (?
 	bin2hex($db->iv)
 ]);
 
-
+if($q1 && $q2 && $q3){
+	session_start();
+	$_SESSION['username'] = $user_login['username'];
+	header('Location: ../public/profile.php');
+	exit();
+} else {
+	echo "SQL Error";
+}

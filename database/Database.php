@@ -33,18 +33,19 @@ class Database
 	/**
 	 * @param $sql
 	 * @param null $args
-	 * @param bool $encrypt
 	 * @return false|PDOStatement
 	 */
-	public function run($sql, $args = NULL, $encrypt = true)
+	public function run($sql, $args = NULL)
 	{
 		if (!$args)
 		{
 			return $this->pdo->query($sql);
 		}
 		$stmt = $this->pdo->prepare($sql);
-		$stmt->execute($args);
-		return $stmt;
+		if($stmt->execute($args)){
+			return true;
+		}
+		return false;
 	}
 
 	public function generate_encryption_key()
