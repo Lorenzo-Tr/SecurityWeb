@@ -17,25 +17,24 @@ if (!empty($_SESSION['username'])) {
 <body>
 <div class="container" id="container">
     <div class="form-container sign-up-container">
-        <form action="../include/register.php" method="post">
+        <form action="../php/register.php" method="post">
             <h1 class="title">Create Account</h1>
+            <p class="infos display" id="infos_register"></p>
             <input name="register_firstname" type="text" placeholder="First name"/>
             <input name="register_lastname" type="text" placeholder="Last name"/>
-            <input name="register_mail" type="email" placeholder="Email"/>
-            <input name="register_username" type="username" placeholder="Username"/>
+            <input name="register_username" type="text" placeholder="Username"/>
             <input name="register_password" type="password" placeholder="Password"/>
-            <p class="infos" id="infosregister"></p>
-            <button id="btnregister">Register</button>
+            <button type="submit" id="register">Register</button>
         </form>
     </div>
     <div class="form-container sign-in-container">
-        <form action="../include/login.php" method="post">
+        <form action="../php/login.php" method="post">
             <h1 class="title">Sign in</h1>
-            <input id="register_username" type="Username" placeholder="Username"/>
-            <input id="register_pass" type="password" placeholder="Password"/>
-            <p class="infos" id="infoslogin"></p>
+            <p class="infos display" id="infos_login"><?= $_SESSION['login_error'] ?? "" ?></p>
+            <input name="login_username" type="text" placeholder="Username"/>
+            <input name="login_password" type="password" placeholder="Password"/>
             <a href="#">Forgot your password?</a>
-            <button id="btnlogin">Login</button>
+            <button type="submit" id="login">Login</button>
         </form>
     </div>
     <div class="overlay-container">
@@ -54,20 +53,15 @@ if (!empty($_SESSION['username'])) {
     </div>
 </div>
 <script>
-    // fonction ajax
-    function post(url, v, f) {
-        let http = new XMLHttpRequest();
-        http.addEventListener('load', f);
-        http.open("POST", url, true);
-        http.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
-        http.send(v);
-    }
-
-
     // changement de class pour faire l'animation entre login et register
     const signUpButton = document.getElementById('signUp');
     const signInButton = document.getElementById('signIn');
     const container = document.getElementById('container');
+
+    <?php if(isset($_SESSION['register_error'])): ?>
+    container.classList.add("right-panel-active");
+    <?php unset($_SESSION['register_error']) ?>
+    <?php endif; ?>
 
     signUpButton.addEventListener('click', () => {
         container.classList.add("right-panel-active");

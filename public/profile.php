@@ -1,8 +1,8 @@
 <?php
 session_start();
 if (empty($_SESSION['username'])) {
-	header("Location: /");
-	exit();
+    header("Location: /");
+    exit();
 }
 ?>
 
@@ -17,8 +17,9 @@ if (empty($_SESSION['username'])) {
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-    <div class="container" id="container">
-        <img src="https://avatars.dicebear.com/api/big-smile/<?= substr($_SESSION['username'], 0, 16);?>.svg" alt="user avatar">
-    </div>
+<div class="container" id="container">
+    <img src="https://avatars.dicebear.com/api/big-smile/<?= substr($_SESSION['username'], 0, 16); ?>.svg?mouth[]=openedSmile&mouth[]=teethSmile&hair[]=wavyBob&hair[]=shortHair&hair[]=curlyBob&hair[]=straightHair&hair[]=curlyShortHair&eyes=cheery&eyes=normal&eyes=starstruck&eyes=winking&hairColor=variant01&&hairColor=variant02&hairColor=variant03&hairColor=variant07"
+         alt="user avatar">
+</div>
 </body>
 </html>

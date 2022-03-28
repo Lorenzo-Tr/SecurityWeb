@@ -30,23 +30,96 @@ class Database
 		}
 	}
 
-	/**
-	 * @param $sql
-	 * @param null $args
-	 * @return false|PDOStatement
-	 */
-	public function run($sql, $args = NULL)
+
+    /**
+     * @param $sql
+     * @param $args
+     * @return bool
+     */
+    public function run($sql, $args = NULL): bool
 	{
-		if (!$args)
-		{
-			return $this->pdo->query($sql);
-		}
-		$stmt = $this->pdo->prepare($sql);
-		if($stmt->execute($args)){
-			return true;
-		}
-		return false;
+        return $this->pdo->prepare($sql)->execute($args);
 	}
+
+
+    /**
+     * @param $table
+     * @param $args
+     * @return bool
+     */
+    public function create($table, $args = NULL): bool
+    {
+        $keys = array_keys($args);
+        $fields = '`'.implode('`, `',$keys).'`';
+
+        $placeholder = substr(str_repeat('?,',count($keys)),0,-1);
+
+        return $this->pdo->prepare("INSERT INTO $table ($fields) VALUES($placeholder)")->execute(array_values($args));
+    }
+
+
+    /**
+     * @param $table
+     * @param $fields
+     * @param $where
+     * @return mixed
+     */
+    public function get($table, $fields = NULL, $where = NULL, $option = PDO::FETCH_OBJ)
+    {
+        if (!empty($fields)){
+            $S_fields = '`'.implode('`, `',$fields).'`';
+        }else {
+            $S_fields = ' * ';
+        }
+
+        $keys = array_keys($where);
+        $where_fields = implode('=? AND ',$keys).'=?';
+
+        $sql = "SELECT $S_fields FROM $table";
+        if(!empty($where_fields)){
+            $sql .= " WHERE $where_fields";
+        }
+
+        $q = $this->pdo->prepare($sql);
+        $q -> execute(array_values($where));
+        return $q->fetch($option);
+    }
+
+    /**
+     * @param $table
+     * @param $fields
+     * @param $where
+     * @param int $option
+     * @return mixed
+     */
+    public function update($table, $fields = NULL, $where = NULL, int $option = PDO::FETCH_OBJ)
+    {
+        $keys = array_keys($fields);
+        $set_fields = implode('=? AND ',$keys).'=?';
+
+        $keys = array_keys($where);
+        $where_fields = implode('=? AND ',$keys).'=?';
+
+        $q = $this->pdo->prepare("UPDATE $table SET $set_fields WHERE $where_fields");
+        $q -> execute(array_values($where));
+        return $q->fetch($option);
+    }
+
+    /**
+     * @param $table
+     * @param $fields
+     * @param $where
+     * @param int $option
+     * @return mixed
+     */
+    public function replace($table, $args = NULL)
+    {
+        $keys = array_keys($args);
+        $set_fields = implode('=?, ',$keys).'=?';
+
+        var_dump("REPLACE INTO $table SET $set_fields");
+        return $this->pdo->prepare("REPLACE INTO $table SET $set_fields")->execute(array_values($args));
+    }
 
 	public function generate_encryption_key()
 	{
