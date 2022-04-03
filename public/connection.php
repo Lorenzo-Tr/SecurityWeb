@@ -19,6 +19,9 @@ if (!empty($_SESSION['username'])) {
     <div class="form-container sign-up-container">
         <form action="../php/register.php" method="post">
             <h1 class="title">Create Account</h1>
+			<?php if(isset($_SESSION['register_error'])): ?>
+                <p class="infos display" id="infos_login"><?= $_SESSION['register_error'] ?? "" ?></p>
+			<?php endif; ?>
             <p class="infos display" id="infos_register"></p>
             <input name="register_firstname" type="text" placeholder="First name"/>
             <input name="register_lastname" type="text" placeholder="Last name"/>
@@ -30,7 +33,10 @@ if (!empty($_SESSION['username'])) {
     <div class="form-container sign-in-container">
         <form action="../php/login.php" method="post">
             <h1 class="title">Sign in</h1>
-            <p class="infos display" id="infos_login"><?= $_SESSION['login_error'] ?? "" ?></p>
+			<?php if(isset($_SESSION['login_error'])): ?>
+                <p class="infos display" id="infos_login"><?= $_SESSION['login_error'] ?? "" ?></p>
+            <?php unset($_SESSION['login_error']) ?>
+			<?php endif; ?>
             <input name="login_username" type="text" placeholder="Username"/>
             <input name="login_password" type="password" placeholder="Password"/>
             <a href="#">Forgot your password?</a>

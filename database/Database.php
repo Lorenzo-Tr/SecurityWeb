@@ -128,12 +128,30 @@ class Database
 		$this->key = openssl_random_pseudo_bytes(256 / 4);
 	}
 
+	/**
+	 * @param string|array $text
+	 * @return array|false|string
+	 */
 	public function encrypt_data($text = '')
 	{
 		if (!is_array($text))
 			return openssl_encrypt($text, "aes256", $this->key, $options = 0, $this->iv);
 		foreach ($text as $key => $val) {
 			$text[$key] = openssl_encrypt($val, "aes256", $this->key, $options = 0, $this->iv);
+		}
+		return $text;
+	}
+
+	/**
+	 * @param string|array $text
+	 * @return array|false|string
+	 */
+	public function decrypt_data($text = '')
+	{
+		if (!is_array($text))
+			return openssl_decrypt($text, "aes256", $this->key, $options = 0, $this->iv);
+		foreach ($text as $key => $val) {
+			$text[$key] = openssl_decrypt($val, "aes256", $this->key, $options = 0, $this->iv);
 		}
 		return $text;
 	}

@@ -26,14 +26,15 @@ if ($user) {
         if (password_verify($user_login['password'], $user->password)) {
             $db->update('ip_address', ['try' => 0], ['ip' => $ip->ip]);
             $_SESSION['username'] = $username;
+			$_SESSION['user_id'] = $user->id;
             header('Location: ../public/profile.php');
         } else {
-            $db->run("INSERT INTO `ip_address` (`ip`, `user_agent`, `try`) VALUES(?, ?, ?) ON DUPLICATE KEY UPDATE try=try+1",[$db->encrypt_data($_SERVER['REMOTE_ADDR']), $db->encrypt_data($_SERVER['HTTP_USER_AGENT']), 1]);
+            $db->run("INSERT INTO `ip_address` (`user_id`, `ip`, `user_agent`, `try`) VALUES(?, ?, ?, ?) ON DUPLICATE KEY UPDATE try=try+1",[$user->id, $db->encrypt_data($_SERVER['REMOTE_ADDR']), $db->encrypt_data($_SERVER['HTTP_USER_AGENT']), 1]);
             $_SESSION['login_error'] = "wrong_password";
             header('Location: ../public/connection.php');
         }
     }else{
-        // TODO: Check if now - update_at = 15min
+        // TODO: Check if now - update_at = 15min - 3/5 puis expo
         $_SESSION['login_error'] = "blocked_account";
         header('Location: ../public/connection.php');
     }

@@ -5,19 +5,27 @@ require_once "const.php";
 $db = new Database(DB_NAME, USER, PASSWORD);
 $db_encrypt = new Database(DB_NAME_ENCRYPT, USER_ENCRYPT, PASSWORD_ENCRYPT);
 $user_details = [
-	'mail' => $_POST['register_mail'],
-	'firstname' => $_POST['register_firstname'],
-	'lastname' => $_POST['register_lastname'],
+	'firstname' => htmlentities($_POST['register_firstname']),
+	'lastname' => htmlentities($_POST['register_lastname']),
 ];
 
 $user_login = [
-	'username' => $_POST['register_username'],
-	'password' => $_POST['register_password'],
+	'username' => htmlentities($_POST['register_username']),
+	'password' => htmlentities($_POST['register_password']),
 ];
+
+if(!preg_match('/^(?=\S*[a-z])(?=\S*[A-Z])(?=\S*\d)(?=\S*[^\w\s])\S{10,}$/', $user_login['password'])){
+	$_SESSION['register_error'] = "Not secure password hint : 10 character, 1 minuscule, 1 majuscule, 1 digit, 1 special character";
+//	var_dump($_SESSION['register_error']);
+//	die();
+	header('Location: ../public/connection.php');
+	exit();
+}
 
 // hash du password and username
 $user_login['password'] = password_hash($user_login['password'], PASSWORD_BCRYPT, ['cost' => 12,]);
 $username = $user_login['username'];
+// TODO: ADD SALT with current date
 $user_login['username'] = hash('sha512', $user_login['username']);
 
 $db->change_encrypt_key();
@@ -31,11 +39,10 @@ try {
 
     $user_id = $db->pdo->lastInsertId();
 
-    $q2 = $db->run('INSERT INTO `user_details` (user_id, lastname, firstname,email) VALUES (?,?,?,?);', [
+    $q2 = $db->run('INSERT INTO `user_details` (user_id, lastname, firstname) VALUES (?,?,?);', [
         $user_id,
-        $user_details['lastname'],
-        $user_details['firstname'],
-        $user_details['mail']
+		$user_details['lastname'],
+		$user_details['firstname']
     ]);
 
     $q3 = $db_encrypt->run('INSERT INTO `encrypt` (`user_id`, `key`, `iv`) VALUES (?,?,?);', [
@@ -48,6 +55,7 @@ try {
     session_start();
     if($q1 && $q2 && $q3){
         $_SESSION['username'] = $username;
+		$_SESSION['user_id'] = $user_id;
         header('Location: ../public/profile.php');
     } else {
         $_SESSION['register_error'] = "sql_error";
