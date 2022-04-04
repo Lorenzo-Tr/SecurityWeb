@@ -65,7 +65,7 @@ class Database
 	 * @param $where
 	 * @return mixed
 	 */
-	public function get($table, $fields = NULL, $where = NULL, $option = PDO::FETCH_OBJ)
+	public function get($table, $fields = NULL, $where = NULL, $order = [], $option = PDO::FETCH_OBJ)
 	{
 		if (!empty($fields)) {
 			$S_fields = '`' . implode('`, `', $fields) . '`';
@@ -80,6 +80,10 @@ class Database
 		if (!empty($where_fields)) {
 			$sql .= " WHERE $where_fields";
 		}
+
+        if (!empty($order)){
+            $sql .= " ORDER BY " . implode('', array_keys($order)) . ' ' . implode('', array_values($order));
+        }
 
 		$q = $this->pdo->prepare($sql);
 		$q->execute(array_values($where));

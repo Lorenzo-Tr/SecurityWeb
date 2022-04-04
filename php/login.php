@@ -15,34 +15,50 @@ $username = $user_login['username'];
 $user_login['username'] = hash('sha512', $user_login['username']);
 
 $user = $db->get('user', [], ['username' => $user_login['username']]);
+$q = $db->pdo->prepare("SELECT * FROM ip_address WHERE user_id=? OR ip=? ORDER BY created_at DESC");
+$q->execute([$user->id ?? '' , $_SERVER['REMOTE_ADDR']]);
+$ip = $q->fetch(PDO::FETCH_OBJ);
 
+    var_dump($ip);
+if($ip->try ?? 0 > 5){
+    echo 'true';
+    // TODO: Check if now - update_at = 15min - 3/5 and after expo
+    $_SESSION['login_error'] = "blocked_account";
+    header('Location: ../public/connection.php');
+    exit();
+}
+die();
 session_start();
 if ($user) {
     // Account exist
     $encrypt = $db_encrypt->get('encrypt', [], ['user_id' => $user->id]);
     $db->change_encrypt_key(hex2bin($encrypt->key), hex2bin($encrypt->iv));
-    $ip = $db->get('ip_address', [], ['ip' => $db->encrypt_data($_SERVER['REMOTE_ADDR'])]);
-    if($ip->try < 5){
-        if (password_verify($user_login['password'], $user->password)) {
-            $db->update('ip_address', ['try' => 0], ['ip' => $ip->ip]);
-            $_SESSION['username'] = $username;
-			$_SESSION['user_id'] = $user->id;
-            header('Location: ../public/profile.php');
-        } else {
-            $db->run("INSERT INTO `ip_address` (`user_id`, `ip`, `user_agent`, `try`) VALUES(?, ?, ?, ?) ON DUPLICATE KEY UPDATE try=try+1",[$user->id, $db->encrypt_data($_SERVER['REMOTE_ADDR']), $db->encrypt_data($_SERVER['HTTP_USER_AGENT']), 1]);
-            $_SESSION['login_error'] = "wrong_password";
-            header('Location: ../public/connection.php');
-        }
-    }else{
-        // TODO: Check if now - update_at = 15min - 3/5 puis expo
-        $_SESSION['login_error'] = "blocked_account";
+//    $ip = $db->get('ip_address', [], ['ip' => $db->encrypt_data($_SERVER['REMOTE_ADDR'])]);
+    $ip_encrypt = $db->encrypt_data($_SERVER['REMOTE_ADDR']);
+    $useragent_encrypt = $db->encrypt_data($_SERVER['HTTP_USER_AGENT']);
+
+    if (password_verify($user_login['password'], $user->password)) {
+        $db->create('ip_address', [`user_id` => $user->id, `ip` => $ip_encrypt, `user_agent` => $useragent_encrypt, `try` => '0']);
+        $_SESSION['username'] = $username;
+        $_SESSION['user_id'] = $user->id;
+        header('Location: ../public/profile.php');
+    } else {
+        $db->create('ip_address', [`user_id` => $user->id, `ip` => $ip_encrypt, `user_agent` => $useragent_encrypt, `try` => $ip->try + 1]);
+        $_SESSION['login_error'] = "wrong_password";
         header('Location: ../public/connection.php');
     }
 } else {
-    $db->run("INSERT INTO `ip_address` (`ip`, `try`) VALUES(?, ?) ON DUPLICATE KEY UPDATE try=try+1",[$_SERVER['REMOTE_ADDR'], 1]);
+//    $ip = $db->get('ip_address', [], ['ip' => $_SERVER['REMOTE_ADDR']], ['created_at' => 'DESC']);
+    if($ip){
+        $db->create('ip_address', ['ip' => $_SERVER['REMOTE_ADDR'], 'user_agent' => $_SERVER['HTTP_USER_AGENT'], 'try' => $ip->try + 1]);
+    }else{
+        $db->create('ip_address', ['ip' => $_SERVER['REMOTE_ADDR'], 'user_agent' => $_SERVER['HTTP_USER_AGENT'], 'try' => 0]);
+    }
     $_SESSION['login_error'] = "no_account_found";
     header('Location: ../public/connection.php');
 }
+
+
 unset($db, $db_encrypt);
 exit();
 
