@@ -21,16 +21,18 @@ $q->execute([$user->id ?? '' , $_SERVER['REMOTE_ADDR']]);
 $ip = $q->fetch(PDO::FETCH_OBJ);
 
 if(($ip->try ?? 0) >= 5){
-    $currentSleepMs = (int)(900 * pow($ip->try, 3600));
-//    $remaining_delay = strtotime($ip->created_at) - time() - min($currentSleepMs, 3600);
-    $remaining_delay = strtotime($ip->created_at) - 900 - time();
-    echo strtotime($ip->created_at);
-    echo date("H:i:s", $remaining_delay);
-    die();
-    // TODO: Check if now - update_at = 15min - 3/5 and after expo
-    $_SESSION['login_error'] = "Your account have been blocked - unlock in " . date("H:i:s", $remaining_delay);
-    header('Location: ../public/connection.php');
-    exit();
+    $currentSleepMs = (int)(15 * pow($ip->try - 4, 2));
+    $now = new DateTime('now', new DateTimeZone('Europe/Paris'));
+    $future_date = new DateTime($ip->created_at, new DateTimeZone('Europe/Paris'));
+    $future_date->add(new DateInterval('PT' . $currentSleepMs . 'M'));
+
+    if ($future_date > $now){
+        $interval = $future_date->diff($now);
+        echo $interval->format("%H:%i:%s");
+        $_SESSION['login_error'] = "Your account have been blocked - unlock in " . $interval->format("%H:%I:%S");
+        header('Location: ../public/connection.php');
+        exit();
+    }
 }
 
 if ($user) {
