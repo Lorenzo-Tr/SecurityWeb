@@ -33,10 +33,13 @@ if (!empty($_SESSION['username'])) {
     <div class="form-container sign-in-container">
         <form action="../php/login.php" method="post">
             <h1 class="title">Sign in</h1>
-			<?php if(isset($_SESSION['login_error'])): ?>
+			<?php if(isset($_SESSION['login_error']) ): ?>
                 <p class="infos display" id="infos_login"><?= $_SESSION['login_error'] ?? "" ?></p>
             <?php unset($_SESSION['login_error']) ?>
 			<?php endif; ?>
+            <?php if(isset($_SESSION['account_block'])): ?>
+                <p class="infos blocked display" id="infos_login">Your account have been blocked - unlock in <?= $_SESSION['account_block'] ?? "" ?></p>
+            <?php endif; ?>
             <input name="login_username" type="text" placeholder="Username"/>
             <input name="login_password" type="password" placeholder="Password"/>
             <a href="#">Forgot your password?</a>

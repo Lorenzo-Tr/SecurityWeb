@@ -29,7 +29,7 @@ if(($ip->try ?? 0) >= 5){
     if ($future_date > $now){
         $interval = $future_date->diff($now);
         echo $interval->format("%H:%i:%s");
-        $_SESSION['login_error'] = "Your account have been blocked - unlock in " . $interval->format("%H:%I:%S");
+        $_SESSION['account_block'] = $interval->format("%H:%I:%S");
         header('Location: ../public/connection.php');
         exit();
     }
