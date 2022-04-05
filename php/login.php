@@ -1,4 +1,5 @@
 <?php
+session_start();
 require_once "../database/Database.php";
 require_once "const.php";
 
@@ -15,20 +16,23 @@ $username = $user_login['username'];
 $user_login['username'] = hash('sha512', $user_login['username']);
 
 $user = $db->get('user', [], ['username' => $user_login['username']]);
-$q = $db->pdo->prepare("SELECT * FROM ip_address WHERE user_id=? OR ip=? ORDER BY created_at DESC");
+$q = $db->pdo->prepare("SELECT * FROM ip_address WHERE user_id=? OR ip=? ORDER BY id DESC");
 $q->execute([$user->id ?? '' , $_SERVER['REMOTE_ADDR']]);
 $ip = $q->fetch(PDO::FETCH_OBJ);
 
-    var_dump($ip);
-if($ip->try ?? 0 > 5){
-    echo 'true';
+if(($ip->try ?? 0) >= 5){
+    $currentSleepMs = (int)(900 * pow($ip->try, 3600));
+//    $remaining_delay = strtotime($ip->created_at) - time() - min($currentSleepMs, 3600);
+    $remaining_delay = strtotime($ip->created_at) - 900 - time();
+    echo strtotime($ip->created_at);
+    echo date("H:i:s", $remaining_delay);
+    die();
     // TODO: Check if now - update_at = 15min - 3/5 and after expo
-    $_SESSION['login_error'] = "blocked_account";
+    $_SESSION['login_error'] = "Your account have been blocked - unlock in " . date("H:i:s", $remaining_delay);
     header('Location: ../public/connection.php');
     exit();
 }
-die();
-session_start();
+
 if ($user) {
     // Account exist
     $encrypt = $db_encrypt->get('encrypt', [], ['user_id' => $user->id]);
