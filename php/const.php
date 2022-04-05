@@ -6,4 +6,4 @@ CONST PASSWORD = 'pM|26A5Mi$Q:77zK';
 CONST PASSWORD_ENCRYPT = 'm7JD##r+}SXUC<e[';
 CONST DB_NAME = "security_web";
 CONST DB_NAME_ENCRYPT = "security_web_encryption";
-CONST UPLOAD_DIR = "/public/assets/upload/";
+CONST UPLOAD_DIR = "public/assets/upload/";

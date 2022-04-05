@@ -16,9 +16,13 @@ $username = $user_login['username'];
 $user_login['username'] = hash('sha512', $user_login['username']);
 
 $user = $db->get('user', [], ['username' => $user_login['username']]);
-$q = $db->pdo->prepare("SELECT * FROM ip_address WHERE user_id=? OR ip=? ORDER BY id DESC");
-$q->execute([$user->id ?? '' , $_SERVER['REMOTE_ADDR']]);
-$ip = $q->fetch(PDO::FETCH_OBJ);
+try {
+    $q = $db->pdo->prepare("SELECT * FROM ip_address WHERE user_id=? OR ip=? ORDER BY id DESC");
+    $q->execute([$user->id ?? '' , $_SERVER['REMOTE_ADDR']]);
+    $ip = $q->fetch(PDO::FETCH_OBJ);
+} catch (PDOException $e){
+
+}
 
 if(($ip->try ?? 0) >= 5){
     $currentSleepMs = (int)(15 * pow($ip->try - 4, 2));
@@ -44,7 +48,8 @@ if ($user) {
     $useragent_encrypt = $db->encrypt_data($_SERVER['HTTP_USER_AGENT']);
 
     if (password_verify($user_login['password'], $user->password)) {
-        $db->create('ip_address', [`user_id` => $user->id, `ip` => $ip_encrypt, `user_agent` => $useragent_encrypt, `try` => '0']);
+        $db->create('ip_address', ['user_id' => $user->id, 'ip' => $ip_encrypt, 'user_agent' => $useragent_encrypt, 'try' => '0']);
+        isset($_SESSION['account_block']) ?? $_SESSION['account_block'] = '';
         $_SESSION['username'] = $username;
         $_SESSION['user_id'] = $user->id;
         header('Location: ../public/profile.php');

@@ -1,6 +1,7 @@
 <?php
 require_once "../database/Database.php";
 require_once "const.php";
+session_start();
 
 $db = new Database(DB_NAME, USER, PASSWORD);
 $db_encrypt = new Database(DB_NAME_ENCRYPT, USER_ENCRYPT, PASSWORD_ENCRYPT);
@@ -28,37 +29,29 @@ try {
 	$upload_file = UPLOAD_DIR . "id_card/" . basename($_FILES['update_ID_Card']['name']);
 	$extension = ['jpg', 'pdf', 'jpeg', 'bmp'];
 	$size = 5*1024*1024;
+    var_dump($upload_file);
+    if (move_uploaded_file($_FILES["update_ID_Card"]["tmp_name"], $upload_file)) {
+        echo "The file ". basename( $_FILES["upload"]["name"]). " has been uploaded.";
+    } else {
+        echo "Sorry, there was an error uploading your file.";
+    }
+    die();
 	if (move_uploaded_file($_FILES['update_ID_Card']['tmp_name'], $upload_file)) {
 		$path = UPLOAD_DIR . "id_card/" . $_FILES['update_ID_Card']['name'];
 		var_dump($path);
-		die;
+
 		$size = $_FILES['update_ID_Card']['size'];
 		$type = $_FILES['update_ID_Card']['type'];
 		$name = $_FILES['update_ID_Card']['name'];
 	}
+    var_dump($_FILES);
 
 	unset($db, $db_encrypt);
-	session_start();
-
-		$_SESSION['username'] = $username;
-		$_SESSION['user_id'] = $user_id;
-		header('Location: ../public/profile.php');
-
-		$_SESSION['register_error'] = "sql_error";
-		header('Location: ../public/connection.php');
-
 	exit();
 	// do other things if successfully inserted
 } catch (PDOException $e) {
 	unset($db, $db_encrypt);
-	session_start();
-	if ($e->errorInfo[1] == 1062) {
-		$_SESSION['register_error'] = "user_taken";
-		// duplicate entry, do something else
-	} else {
-		$_SESSION['register_error'] = "sql_error";
-		// an error other than duplicate entry occurred
-	}
+    $_SESSION['update_error'] = "pdo_error";
 	header('Location: ../public/connection.php');
 	exit();
 }
